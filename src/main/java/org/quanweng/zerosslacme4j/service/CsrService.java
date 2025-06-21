@@ -1,8 +1,11 @@
 package org.quanweng.zerosslacme4j.service;
 
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.quanweng.zerosslacme4j.pojo.Properties.CsrRequestProperties;
+import org.quanweng.zerosslacme4j.pojo.Properties.SubjectInfoProperties;
 import org.quanweng.zerosslacme4j.pojo.model.CsrRequest;
 import org.quanweng.zerosslacme4j.pojo.model.KeyBundle;
+import org.quanweng.zerosslacme4j.pojo.model.SubjectInfo;
 import org.quanweng.zerosslacme4j.utils.CryptoUtils;
 import org.quanweng.zerosslacme4j.utils.KeyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +19,30 @@ public class CsrService {
 
     @Autowired
     private CryptoUtils cryptoUtils;
+    @Autowired
+    private SubjectInfoProperties subjectInfoProperties;
+    @Autowired
+    private CsrRequestProperties csrRequestProperties;
 
     public KeyBundle generateCsrAndKey(CsrRequest request) throws Exception {
+        //配置类注入
+        if(request.getSubjectInfo() == null) {
+            SubjectInfo subjectInfo = new SubjectInfo();
+            subjectInfo.setCn(subjectInfoProperties.getCn());
+            subjectInfo.setC(subjectInfoProperties.getC());
+            subjectInfo.setSt(subjectInfoProperties.getSt());
+            subjectInfo.setL(subjectInfoProperties.getL());
+            subjectInfo.setO(subjectInfoProperties.getO());
+            subjectInfo.setOu(subjectInfoProperties.getOu());
+            subjectInfo.setEmailAddress(subjectInfoProperties.getEmailAddress());
+            request.setSubjectInfo(subjectInfo);
+        }
+        if(request.getSubjectAltNames() == null) {
+            request.setSubjectAltNames(csrRequestProperties.getSubjectAltNames());
+        }
+        if(request.getPassword() == null) {
+            request.setPassword(csrRequestProperties.getPassword());
+        }
         // 生成密钥对
         KeyPair keyPair = KeyUtils.generateECKey(request.getCurve());
 

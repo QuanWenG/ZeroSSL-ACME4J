@@ -1,2 +1,25 @@
 server:
   port: 8087
+csr:
+  sub:
+    #域名
+    cn: example.com
+    #国家代码
+    c: HK
+    #省份
+    st: HK
+    #城市
+    l: HK
+    #组织名称
+    o: You Organization
+    #组织单位
+    ou: IT Department
+    #邮箱地址
+    email-address: admin@example.com
+  req:
+    #备用名称
+    subject-alt-names:
+      -example.com
+      -www.example.com
+    #私钥加密密码
+    password: YouSecurePassword
