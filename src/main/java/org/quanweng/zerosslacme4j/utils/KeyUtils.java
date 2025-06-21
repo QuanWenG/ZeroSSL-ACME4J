@@ -15,6 +15,13 @@ import java.util.Base64;
 
 public class KeyUtils {
 
+    // 生成RSA密钥 - 新增方法
+    public static KeyPair generateRSAKey(int keySize) throws Exception {
+        KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA", "BC");
+        gen.initialize(keySize);
+        return gen.generateKeyPair();
+    }
+
     // 生成EC密钥
     public static KeyPair generateECKey(String curveName) throws Exception {
         ECGenParameterSpec spec = new ECGenParameterSpec(
@@ -25,13 +32,22 @@ public class KeyUtils {
         return gen.generateKeyPair();
     }
 
-    // OpenSSL传统格式PEM
+    // OpenSSL传统格式PEM - 修改以支持RSA
     public static String convertToOpenSSLPEM(PrivateKey privateKey) throws Exception {
         PrivateKeyInfo pki = PrivateKeyInfo.getInstance(privateKey.getEncoded());
         ASN1Encodable asn1 = pki.parsePrivateKey();
-        return "-----BEGIN EC PRIVATE KEY-----\n" +
-            Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(asn1.toASN1Primitive().getEncoded()) +
-            "\n-----END EC PRIVATE KEY-----";
+        
+        // 判断密钥类型
+        String algorithm = privateKey.getAlgorithm();
+        if ("RSA".equals(algorithm)) {
+            return "-----BEGIN RSA PRIVATE KEY-----\n" +
+                Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(asn1.toASN1Primitive().getEncoded()) +
+                "\n-----END RSA PRIVATE KEY-----";
+        } else {
+            return "-----BEGIN EC PRIVATE KEY-----\n" +
+                Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(asn1.toASN1Primitive().getEncoded()) +
+                "\n-----END EC PRIVATE KEY-----";
+        }
     }
 
     // 编码CSR为PEM格式

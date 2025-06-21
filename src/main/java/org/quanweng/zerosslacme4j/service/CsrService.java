@@ -43,9 +43,15 @@ public class CsrService {
         if(request.getPassword() == null) {
             request.setPassword(csrRequestProperties.getPassword());
         }
-        // 生成密钥对
-        KeyPair keyPair = KeyUtils.generateECKey(request.getCurve());
-
+        
+        // 修改：根据keyType生成对应的密钥对
+        KeyPair keyPair;
+        if ("RSA".equals(request.getKeyType())) {
+            keyPair = KeyUtils.generateRSAKey(request.getRsaKeySize());
+        } else {
+            keyPair = KeyUtils.generateECKey(request.getCurve());
+        }
+    
         // 生成CSR
         PKCS10CertificationRequest csr = CryptoUtils.generateCsr(
             request.getSubjectInfo(),

@@ -98,8 +98,10 @@ public class CryptoUtils {
             );
         }
 
+        // 修改：根据密钥类型确定签名算法
+        String keyType = keyPair.getPrivate().getAlgorithm();
         return csrBuilder.build(
-            new JcaContentSignerBuilder(getSigAlgo(hashAlgo))
+            new JcaContentSignerBuilder(getSigAlgo(hashAlgo, keyType))
                 .build(keyPair.getPrivate())
         );
     }
@@ -128,13 +130,22 @@ public class CryptoUtils {
         return new SecretKeySpec(keyBytes, "AES");
     }
 
-    // 获取签名算法
-    private static String getSigAlgo(String hashAlgo) {
-        return switch (hashAlgo.toUpperCase()) {
-            case "SHA256" -> "SHA256withECDSA";
-            case "SHA384" -> "SHA384withECDSA";
-            case "SHA512" -> "SHA512withECDSA";
-            default -> "SHA256withECDSA";
-        };
+    // 获取签名算法 - 修改以支持RSA
+    private static String getSigAlgo(String hashAlgo, String keyType) {
+        if ("RSA".equals(keyType)) {
+            return switch (hashAlgo.toUpperCase()) {
+                case "SHA256" -> "SHA256withRSA";
+                case "SHA384" -> "SHA384withRSA";
+                case "SHA512" -> "SHA512withRSA";
+                default -> "SHA256withRSA";
+            };
+        } else {
+            return switch (hashAlgo.toUpperCase()) {
+                case "SHA256" -> "SHA256withECDSA";
+                case "SHA384" -> "SHA384withECDSA";
+                case "SHA512" -> "SHA512withECDSA";
+                default -> "SHA256withECDSA";
+            };
+        }
     }
 }
